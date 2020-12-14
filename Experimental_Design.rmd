@@ -253,10 +253,12 @@ pstd.cond[pstd.cond$Step == 6,]
 
 ## Load this data and check whether the pure quadratic effect is significant
 setwd(dir = "/Users/shermeenvelani/Documents/Projects/Netflix - Experimental Design/data/")
-netflix.ph4.5 <- read.csv("2^2+cp_recentre.csv", header = TRUE)
-ph4.5 <- data.frame(y = netflix.ph4.5$Browse.Time,
-                  x1 = convert.N.to.C(U = netflix.ph4.5$Prev.Length, UH = 90, UL = 60),
-                  x2 = convert.N.to.C(U = netflix.ph4.5$Prev.Size, UH = 0.8, UL = 0.6))
+netflix.ph2.2 <- rbind(read.csv("2^2+cp_recentre.csv"),
+                       grddescent[grddescent$Prev.Length == 90,])
+
+ph4.5 <- data.frame(y = netflix.ph2.2$Browse.Time,
+                    x1 = round(convert.N.to.C(U = netflix.ph2.2$Prev.Length, UH = 100, UL = 80),1),
+                    x2 = round(convert.N.to.C(U = netflix.ph2.2$Prev.Size, UH = 0.5154289, UL = 0.4577144),1))
 ph4.5$xPQ <- (ph4.5$x1^2 + ph4.5$x2^2)/2
 
 ## Check the average browsing time in each condition:
@@ -270,7 +272,9 @@ mean(ph4.5$y[ph4.5$xPQ != 0]) - mean(ph4.5$y[ph4.5$xPQ == 0])
 m <- lm(y~x1+x2+x1*x2+xPQ, data = ph4.5)
 summary(m)
 ```
-At a 5% significance we can reject the null hypothesis which now means we are in 
+We can reject the null hypothesis which now means we are in 
 the presence of a quadratic curvature. Hence, we can proceed to the next step
 which is the Response Surface which fits a second order model to find the optimum
+
+
 
