@@ -1,5 +1,5 @@
 ---
-title: "Factor Screening"
+title: "Netflix - Average Browsing Time Experiment"
 output: github_document
 ---
 
@@ -7,6 +7,8 @@ output: github_document
 ```{r}
 library(plot3D)
 library(gplots)
+
+# Phase 1 - Factor Screening
 
 # Function to create blues
 blue_palette <- colorRampPalette(c(rgb(247,251,255,maxColorValue = 255), 
@@ -68,6 +70,8 @@ plotmeans(formula = y~PL, ylab = "Average Browsing Time", xlab = "Prev.Length",
 axis(side = 1, at = c(1,2), labels = c("30", "90"))
 ```
 ```{r}
+
+
 ## Phase 2
 ## We have 2 factors now - Preview Size and Preview Length
 
