@@ -20,3 +20,5 @@ In this case, the center point was at a Preview Length of 60 and we took increme
 The image below shows us the plot of steps taken and we can see that the optimum lies somewhere between steps 2 and 4
 
 <img src="Plots/Steps Plot.png" width = 500> 
+
+Taking the new high and low points we generate data and check if we are now in the quadratic curvature through linear regression. Our results give a pvalue less than the 5% significance level therefore we reject the null hypothesis and state that we are now in the presence of the quadratic curvature. The next step would be to fit a second order model and use Response Surface Methodology to find the optimum point
