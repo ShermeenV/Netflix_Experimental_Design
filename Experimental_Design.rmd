@@ -1,5 +1,5 @@
 ---
-title: "Netflix - Average Browsing Time Experiment"
+title: "Netflix - Experimental Design"
 output: github_document
 ---
 
@@ -7,8 +7,6 @@ output: github_document
 ```{r}
 library(plot3D)
 library(gplots)
-
-# Phase 1 - Factor Screening
 
 # Function to create blues
 blue_palette <- colorRampPalette(c(rgb(247,251,255,maxColorValue = 255), 
@@ -28,7 +26,7 @@ convert.C.to.N <- function(x,UH,UL){
 ```
 
 ```{r}
-setwd(dir = "/Users/shermeenvelani/Documents/Projects/Netflix - Experimental Design/")
+setwd(dir = "/Users/shermeenvelani/Documents/Projects/Netflix - Experimental Design/data/")
 Fact.Scr <- read.csv(file = "Phase1_Results_2^3.csv", header = T)
 
 # Creating a data frame with the response variable and 3 factors in coded units.
@@ -62,19 +60,15 @@ axis(side = 1, at = c(1,2), labels = c("0.1", "0.3"))
 plotmeans(formula = y~PS, ylab = "Average Browsing Time", xlab = "Prev.Size", 
           data = ph1, xaxt = "n", pch = 16,ylim = c(16,21))
 axis(side = 1, at = c(1,2), labels = c("0.3", "0.5"))
-```
-```{r}
-par(mfrow=c(2,3))
 plotmeans(formula = y~PL, ylab = "Average Browsing Time", xlab = "Prev.Length", 
           data = ph1, xaxt = "n", pch = 16,ylim = c(16,21))
 axis(side = 1, at = c(1,2), labels = c("30", "90"))
 ```
 ```{r}
-
-
 ## Phase 2
 ## We have 2 factors now - Preview Size and Preview Length
 
+setwd(dir = "/Users/shermeenvelani/Documents/Projects/Netflix - Experimental Design/data/")
 netflix.ph2 <- read.csv("Phase2_2^2+cp.csv", header = TRUE)
 
 ## The factors and their low/center/high levels are as follows:
@@ -104,8 +98,179 @@ mean(ph2$y[ph2$xPQ != 0]) - mean(ph2$y[ph2$xPQ == 0])
 m <- lm(y~x1+x2+x1*x2+xPQ, data = ph2)
 summary(m)
 ```
+
 We test the null hypothesis for coefficient of curvature being zero. 
 
 Since the pvalue is 0.97 we fail to reject the null hypothesis and therefore
 are not in the presence of quadratic curvature. To find the quadratic curvature,
 we need to use the method of steepest descent
+
+```{r}
+## It isn't, so we're in a flat area of the responsr surface. We should
+## perform a steepest descent phase.
+
+## Fit the first order model to determine the direction of the path of 
+## steepest descent
+m.fo <- lm(y~x1+x2, data = ph2)
+beta0 <- coef(m.fo)[1]
+beta1 <- coef(m.fo)[2]
+beta2 <- coef(m.fo)[3]
+grd <- mesh(x = seq(convert.N.to.C(U = 30, UH = 90, UL = 30), 
+                    convert.N.to.C(U = 120, UH = 90, UL = 30), 
+                    length.out = 100), 
+            y = seq(convert.N.to.C(U = 0.2, UH = 0.5, UL = 0.3), 
+                    convert.N.to.C(U = 0.8, UH = 0.5, UL = 0.3), 
+                    length.out = 100))
+x1 <- grd$x
+x2 <- grd$y
+eta.fo <- beta0 + beta1*x1 + beta2*x2
+
+# 2D contour plot
+contour(x = seq(convert.N.to.C(U = 30, UH = 90, UL = 30), 
+                convert.N.to.C(U = 120, UH = 90, UL = 30), 
+                length.out = 100),
+        y = seq(convert.N.to.C(U = 0.2, UH = 0.5, UL = 0.3), 
+                convert.N.to.C(U = 0.8, UH = 0.5, UL = 0.3), 
+                length.out = 100), 
+        z = eta.fo, xlab = "x1 (Preview Length)", ylab = "x2 (Preview Size)",
+        nlevels = 15, col = blue_palette(15), labcex = 0.9, asp=1)
+abline(a = 0, b = beta2/beta1, lty = 2)
+points(x = 0, y = 0, col = "red", pch = 16)
+
+# gradient
+g <- matrix(c(beta1, beta2), nrow = 1)
+g
+
+
+### Now that we have a starting center point, we can start with the gradient
+### descent
+
+# We will take steps of size 10 seconds in preview length.In coded units this is
+PL.step <- convert.N.to.C(U = 60 + 10, UH = 90, UL = 30)
+lamda <- PL.step/abs(beta1)
+
+## Step 0: The center point we've already observed
+x.old <- matrix(0, nrow=1, ncol=2)
+text(x = 0, y = 0+0.25, labels = "0")
+step0 <- data.frame(Prev.Length = convert.C.to.N(x = 0, UH = 90, UL = 30), 
+                 Prev.Size = convert.C.to.N(x = 0, UH = 0.5, UL = 0.3))
+
+## Step 1: 
+x.new <- x.old - lamda*g
+points(x = x.new[1,1], y = x.new[1,2], col = "red", pch = 16)
+text(x = x.new[1,1], y = x.new[1,2]+0.25, labels = "1")
+step1 <- data.frame(Prev.Length = convert.C.to.N(x = x.new[1,1], UH = 90, 
+                                                 UL = 30), 
+                    Prev.Size = convert.C.to.N(x = x.new[1,2], UH = 0.5, 
+                                               UL = 0.3))
+
+## Step 2: 
+x.old <- x.new
+x.new <- x.old - lamda*g
+points(x = x.new[1,1], y = x.new[1,2], col = "red", pch = 16)
+text(x = x.new[1,1], y = x.new[1,2]+0.25, labels = "2")
+step2 <- data.frame(Prev.Length = convert.C.to.N(x = x.new[1,1], UH = 90, 
+                                                 UL = 30), 
+                    Prev.Size = convert.C.to.N(x = x.new[1,2], UH = 0.5, 
+                                               UL = 0.3))
+
+## Step 3: 
+x.old <- x.new
+x.new <- x.old - lamda*g
+points(x = x.new[1,1], y = x.new[1,2], col = "red", pch = 16)
+text(x = x.new[1,1], y = x.new[1,2]+0.25, labels = "3")
+step3 <- data.frame(Prev.Length = convert.C.to.N(x = x.new[1,1], UH = 90, 
+                                                 UL = 30), 
+                    Prev.Size = convert.C.to.N(x = x.new[1,2], UH = 0.5, 
+                                               UL = 0.3))
+
+## Step 4: 
+x.old <- x.new
+x.new <- x.old - lamda*g
+points(x = x.new[1,1], y = x.new[1,2], col = "red", pch = 16)
+text(x = x.new[1,1], y = x.new[1,2]+0.25, labels = "4")
+step4 <- data.frame(Prev.Length = convert.C.to.N(x = x.new[1,1], UH = 90, 
+                                                 UL = 30), 
+                    Prev.Size = convert.C.to.N(x = x.new[1,2], UH = 0.5, 
+                                               UL = 0.3))
+
+## Step 5: 
+x.old <- x.new
+x.new <- x.old - lamda*g
+points(x = x.new[1,1], y = x.new[1,2], col = "red", pch = 16)
+text(x = x.new[1,1], y = x.new[1,2]+0.25, labels = "5")
+step5 <- data.frame(Prev.Length = convert.C.to.N(x = x.new[1,1], UH = 90, 
+                                                 UL = 30), 
+                    Prev.Size = convert.C.to.N(x = x.new[1,2], UH = 0.5, 
+                                               UL = 0.3))
+
+## Step 6: 
+x.old <- x.new
+x.new <- x.old - lamda*g
+points(x = x.new[1,1], y = x.new[1,2], col = "red", pch = 16)
+text(x = x.new[1,1], y = x.new[1,2]+0.25, labels = "6")
+step6 <- data.frame(Prev.Length = convert.C.to.N(x = x.new[1,1], UH = 90, 
+                                                 UL = 30), 
+                    Prev.Size = convert.C.to.N(x = x.new[1,2], UH = 0.5, 
+                                               UL = 0.3))
+
+
+## The following is a list of the conditions along the path of steepest descent
+pstd.cond <- data.frame(Step = 0:6, rbind(step0, step1, step2, step3, step4, 
+                                          step5, step6))
+pstd.cond
+```
+```{r}
+## We have now reached the final limit of Preview Length since our max length is
+## 120 and so we know our optimal is in between the steps we calculated
+
+## Load the data associated with the steepest descent search
+setwd(dir = "/Users/shermeenvelani/Documents/Projects/Netflix - Experimental Design/data/")
+grddescent <- read.csv("gradientdescent_steps.csv", header = TRUE)
+
+## Calculate the average browsing time in each of these conditions and find the 
+## condition that minimizes it
+pstd.means <- aggregate(grddescent$Browse.Time, 
+                        by = list(Prev.Length = grddescent$Prev.Length, 
+                                  Prev.Size = grddescent$Prev.Size), 
+                        FUN = mean)
+
+plot(x = 0:6, y = pstd.means$x,
+     type = "l", xlab = "Step Number", ylab = "Average Browsing Time")
+points(x = 0:6, y = pstd.means$x,
+       col = "red", pch = 16)
+
+## Clearly average browsing time was minimized at Step 6
+pstd.cond[pstd.cond$Step == 6,]
+```
+
+```{r}
+## We should follow this up with 2^2 factorial conditions to ensure we're close 
+## to the optimum
+## We will re-center our coded scale in this new region as follows:
+## Preview Length: 80  vs 90 vs 100
+## Preview Size:   0.4577144 vs 0.48657165 vs 0.5154289
+
+## Load this data and check whether the pure quadratic effect is significant
+setwd(dir = "/Users/shermeenvelani/Documents/Projects/Netflix - Experimental Design/data/")
+netflix.ph4.5 <- read.csv("2^2+cp_recentre.csv", header = TRUE)
+ph4.5 <- data.frame(y = netflix.ph4.5$Browse.Time,
+                  x1 = convert.N.to.C(U = netflix.ph4.5$Prev.Length, UH = 90, UL = 60),
+                  x2 = convert.N.to.C(U = netflix.ph4.5$Prev.Size, UH = 0.8, UL = 0.6))
+ph4.5$xPQ <- (ph4.5$x1^2 + ph4.5$x2^2)/2
+
+## Check the average browsing time in each condition:
+aggregate(ph4.5$y, by = list(x1 = ph4.5$x1, x2 = ph4.5$x2), FUN = mean)
+
+## The difference in average browsing time in factorial conditions vs. the center 
+## point condition
+mean(ph4.5$y[ph4.5$xPQ != 0]) - mean(ph4.5$y[ph4.5$xPQ == 0])
+
+## Check to see if that's significant
+m <- lm(y~x1+x2+x1*x2+xPQ, data = ph4.5)
+summary(m)
+```
+At a 5% significance we can reject the null hypothesis which now means we are in 
+the presence of a quadratic curvature. Hence, we can proceed to the next step
+which is the Response Surface which fits a second order model to find the optimum
+
