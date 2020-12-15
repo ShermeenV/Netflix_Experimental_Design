@@ -1,10 +1,27 @@
 # Netflix Experimental Design
 
+* Summary and Results
+* Phase 1 - Factor Screening
+* Phase 2 - Path of Steepest Descent
+* Phase 3 - Response Surface Methodology
+
+## Summary and Results
+
+This project is on experimenting with different features of the online streaming service to reduce the average browsing time. Netflix users often experience choice overload and can be overcome by a psychological phenomenon known as **decision paralysis**. This makes it harder for them to make a decision when faced with a large number of options which often results in them losing interest and not watching anything. To overcome this, Netflix tries to create an interface that will reduce the browsing time and will ensure the user does not leave the site disappointed. This project aims to determine the combined optimum value of three features namely Tile Size, Preview Length and Preview Size that result in the lowest average browsing time. 
+
+The optimum value turns out to be 
+
+| Average Browsing Time | Preview Length | Preview Size | Tile Size |
+| ------------- | ------------- | ------------- | ------------- |
+| 16 minutes  | 90  | 0.5 | 0.2 |
+
+<img src="Plots/OptimumPoint_NU.png" width=600>
+
 ## Phase 1 - Factor Screening
 
 The objective of this phase is to determine whether all 3 factors i.e Tile Size, Preview Size and Preview Length are important in reducing the *Average Browsing Time* of the user. If there is any factor not significant to the response variable it can be removed from further analysis. 
 
-After running a linear regression model, we observed that Tile Size did not have an effect on our response variable which can be seen in the factor screening plots below. Therefore, we can omit that factor and only use Preview Size and Length to reach the optimal value.
+After running a linear regression model, we observed that Tile Size did not have an effect on our response variable which can be seen in the factor screening plots below. Therefore, we can omit that factor and only use Preview Size and Length to reach the optimum value.
 
 <img src="Plots/FactorScreeningPlots.png">
 
@@ -26,3 +43,6 @@ Taking the new high and low points we generate data and check if we are now in t
 ## Phase 3 - Response Surface Methodology
 
 We will fit a second order model here i.e. a quadratic curve
+
+<img src="Plots/ContourPlots_OptimalPoint.png" width=600>
+
