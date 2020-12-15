@@ -19,14 +19,15 @@ The optimum value turns out to be
 
 ## Phase 1 - Factor Screening
 
-The objective of this phase is to determine whether all 3 factors i.e Tile Size, Preview Size and Preview Length are important in reducing the *Average Browsing Time* of the user. If there is any factor not significant to the response variable it can be removed from further analysis. 
+The objective of this phase is to determine whether all 3 factors i.e Tile Size, Preview Size and Preview Length are important in reducing the *Average Browsing Time* of the user. If a factor does not significantly reduce the browsing time, it can be removed from further analysis. A 2^3 factorial experiment was conducted for this purpose with the null hypothesis being that the factor does not have an effect on the response variable. 
 
-After running a linear regression model, we observed that Tile Size did not have an effect on our response variable which can be seen in the factor screening plots below. Therefore, we can omit that factor and only use Preview Size and Length to reach the optimum value.
+After running a linear regression model, we conclude that Tile Size does not play a major role in reducing the browsing time. Hypothesis testing resulted in a **pvalue of 0.7605** which means the null hypothesis cannot be rejected. The plots below show the effect of each factor on the response variable.
 
 <img src="Plots/FactorScreeningPlots.png">
 
+As a result, we will drop Tile Size for the rest of the experiment.
 
-## Phase 2 - Gradient Descent
+## Phase 2 - Path of Steepest Descent
 
 This phase determines if we are currently in the presence of quadratic curvature. If not, we would have to move towards that curvature in order to get closer to our optimum. For this we would start at our centre and take steps until we find the turning point. This would be the point at which our response variable starts to increase again indicating we were at the optimum point and have moved away.
 
